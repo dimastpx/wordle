@@ -19,14 +19,18 @@ class Game:
         self.guessed = [["_", "_", "_", "_", "_"], set()]
         self.attempts = 7
         self.win = False
+        self.error = False
 
     def info(self) -> str:
         if self.win:
             return ("Поздравляем, вы угадали!\n"
                     "Нажмите /start чтобы играть заново")
+        elif self.error:
+            self.error = False
+            return "Слово должно быть из 5 букв"
         elif self.attempts > 0:
             text = (f"{str(self.guessed[0])}\n"
-                    f"Известные буквы: {str(self.guessed[1])}\n"
+                    f"Известные буквы: {"".join(self.guessed[1])}\n"
                     f"\n"
                     f"У вас осталось {self.attempts} попыток")
             return text
@@ -36,7 +40,9 @@ class Game:
                     f"Нажмите /start для повторной игры")
 
     def write(self, user_word):
-        if self.attempts > 0:
+        if len(user_word) != 5:
+            self.error = True
+        elif self.attempts > 0:
             if user_word == self.word:
                 self.win = True
                 self.guessed[0] = user_word.upper()
@@ -53,6 +59,7 @@ class Game:
 def start(message):
     print(message)
     users[str(message.chat.id)] = Game()
+    bot.send_message(chat_id=message.chat.id, text="Вводите слово из 5 букв")
 
 @bot.message_handler(content_types=["text"])
 def answer(message):
